@@ -63,7 +63,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     // this method is use to add new course to our sqlite database.
-    public void addNewCourse(String courseName) {
+    public long addNewProduct(String productName) {
 
         // on below line we are creating a variable for
         // our sqlite database and calling writable method
@@ -76,15 +76,16 @@ public class DBHandler extends SQLiteOpenHelper {
 
         // on below line we are passing all values
         // along with its key and value pair.
-        values.put(NAME_COL, courseName);
+        values.put(NAME_COL, productName);
 
         // after adding all values we are passing
         // content values to our table.
-        db.insert(TABLE_NAME, null, values);
+        long id = db.insert(TABLE_NAME, null, values);
 
         // at last we are closing our
         // database after adding database.
         db.close();
+        return id;
     }
 
     @Override
@@ -94,13 +95,14 @@ public class DBHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void remove(String str) {
+    public void remove(long str) {
 
         this.db = getWritableDatabase();
         db.beginTransaction();
+        String s = Long.toString(str);
         try {
             // Order of deletions is important when foreign key relationships exist.
-            db.delete(TABLE_NAME, "name=?", new String[]{str});
+            db.delete(TABLE_NAME, "id=?", new String[]{s});
 //            db.delete(TABLE_NAME, null, null);"ID=?"
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -110,26 +112,21 @@ public class DBHandler extends SQLiteOpenHelper {
         }
 
     }
-    public List<String> getAllProducts() {
+    public List<Product> getAllProducts() {
 
-        List<String> strings = new ArrayList<>();
+        List<Product> prod = new ArrayList<>();
 
         String SELECT_QUERY = String.format("SELECT * FROM " + TABLE_NAME);
 
         this.db = getReadableDatabase();
         Cursor cursor = db.rawQuery(SELECT_QUERY, null);
 
-
-
-
         try {
             if (cursor.moveToFirst()) {
                 do {
-//                    private static final String NAME_COL = "name";
-
+                    @SuppressLint("Range") long ids = cursor.getLong(cursor.getColumnIndex(ID_COL));
                     @SuppressLint("Range") String str = cursor.getString(cursor.getColumnIndex(NAME_COL));
-
-                    strings.add(str);
+                    prod.add(new Product(ids, str));
                 } while(cursor.moveToNext());
             }
         } catch (Exception e) {
@@ -139,6 +136,6 @@ public class DBHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-        return strings;
+        return prod;
     }
 }

@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import java.util.List;
 
 public class MainView extends AppCompatActivity {
@@ -28,24 +27,26 @@ public class MainView extends AppCompatActivity {
         layout = findViewById(R.id.container);
 
         dbHandler = new DBHandler(MainView.this);
-        List<String> products = dbHandler.getAllProducts();
+        List<Product> products = dbHandler.getAllProducts();
 
-        for (int i = 0; i < products.size(); i++) {
+        for (Product product: products) {
+
             View view = getLayoutInflater().inflate(R.layout.card, null);
             TextView nameView = view.findViewById(R.id.name);
             Button delete = view.findViewById(R.id.delete);
 
-            String str = products.get(i);
+            String str = product.getName();
+            long idk = product.getId();
+
             nameView.setText(str);
 
             delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    dbHandler.remove(str);
+                    dbHandler.remove(idk);
                     layout.removeView(view);
                 }
             });
-
             layout.addView(view);
         }
         buildDialog();
@@ -65,12 +66,13 @@ public class MainView extends AppCompatActivity {
         EditText name = view.findViewById(R.id.nameEdit);
 
         builder.setView(view);
+
         builder.setTitle("Product name: ")
             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int which) {
-                    addCard(name.getText().toString());
-                    dbHandler.addNewCourse(name.getText().toString());
+                    long id = dbHandler.addNewProduct(name.getText().toString());
+                    addCard(name.getText().toString(), id);
                     name.setText("");
                 }
             })
@@ -83,7 +85,7 @@ public class MainView extends AppCompatActivity {
         dialog = builder.create();
     }
 
-    private void addCard(String name) {
+    private void addCard(String name, long id) {
         View view = getLayoutInflater().inflate(R.layout.card, null);
 
         TextView nameView = view.findViewById(R.id.name);
@@ -94,11 +96,10 @@ public class MainView extends AppCompatActivity {
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dbHandler.remove(name);
+                dbHandler.remove(id);
                 layout.removeView(view);
             }
         });
         layout.addView(view);
-
     }
 }
