@@ -1,6 +1,11 @@
 <resources>
     <string name="activity_main2">SHOPPING LIST</string>
-<!--    <string-array name="common">-->
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="name">Name</string>
+    <string name="delete">Delete</string>
+    <string name="product_name">Product Name</string>
+    <!--    <string-array name="common">-->
 <!--        <item>"How are you?"</item>-->
 <!--        <item>"Im doing good!"</item>-->
 <!--        <item>"Nice to meet you"</item>-->

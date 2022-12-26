@@ -7,18 +7,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainView">
-
-<!--    <Button-->
-<!--        android:id="@+id/button4"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_alignParentBottom="true"-->
-<!--        android:layout_alignParentRight="true"-->
-<!--        android:layout_marginBottom="100dp"-->
-<!--        android:layout_marginRight="20dp"-->
-<!--        android:textSize="10dp"-->
-<!--        android:text="REMOVE ALL" />-->
-
     <Button
         android:id="@+id/add"
         android:layout_width="350dp"
@@ -27,39 +15,18 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="10dp"
         android:shadowColor="@color/black"
-        android:text="Add"
-        android:textSize="30dp" />
-
-
-
+        android:text="@string/add"
+        android:textSize="30sp"/>
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="100dp"
         android:scrollbars="none">
-
         <LinearLayout
             android:id="@+id/container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
         </LinearLayout>
-
     </ScrollView>
-
-
-
-
-    <!--    <EditText-->
-    <!--        android:id="@+id/t"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:text="TextView" />-->
-
-    <!--    <ListView-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent"-->
-    <!--        android:id="@+id/list_view"></ListView>-->
-
 </RelativeLayout>

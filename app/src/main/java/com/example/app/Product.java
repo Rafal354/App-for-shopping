@@ -2,8 +2,8 @@ package com.example.app;
 
 public class Product {
 
-    private long id;
-    private String name;
+    private final long id;
+    private final String name;
 
     public Product(long id, String name) {
         this.id = id;

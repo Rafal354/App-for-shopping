@@ -1,6 +1,6 @@
 package com.example.app;
-import static android.content.ContentValues.TAG;
 
+import static android.content.ContentValues.TAG;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,11 +8,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBHandler extends SQLiteOpenHelper {
+
+    private static DBHandler dbHandler = null;
 
     // creating a constant variables for our database.
     // below variable is for our database name.
@@ -28,62 +29,35 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final String ID_COL = "id";
 
     // below variable is for our course name column
-    private static final String NAME_COL = "name";
+    private static String NAME_COL = "name";
 
     private SQLiteDatabase db;
 
-    // below variable id for our course duration column.
-//    private static final String DURATION_COL = "duration";
-
-    // below variable for our course description column.
-//    private static final String DESCRIPTION_COL = "description";
-
-    // below variable is for our course tracks column.
-//    private static final String TRACKS_COL = "tracks";
-
-    // creating a constructor for our database handler.
-    public DBHandler(Context context) {
+    private DBHandler(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
-    // below method is for creating a database by running a sqlite query
+    public static DBHandler getInstance(Context context) {
+        if (dbHandler == null) {
+            dbHandler = new DBHandler(context);
+        }
+        return dbHandler;
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // on below line we are creating
-        // an sqlite query and we are
-        // setting our column names
-        // along with their data types.
         String query = "CREATE TABLE " + TABLE_NAME + " ("
                 + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + NAME_COL + " TEXT)";
-
-        // at last we are calling a exec sql
-        // method to execute above sql query
         db.execSQL(query);
     }
-
-    // this method is use to add new course to our sqlite database.
     public long addNewProduct(String productName) {
+        this.db = this.getWritableDatabase();
 
-        // on below line we are creating a variable for
-        // our sqlite database and calling writable method
-        // as we are writing data in our database.
-        db = this.getWritableDatabase();
-
-        // on below line we are creating a
-        // variable for content values.
         ContentValues values = new ContentValues();
-
-        // on below line we are passing all values
-        // along with its key and value pair.
         values.put(NAME_COL, productName);
-
-        // after adding all values we are passing
-        // content values to our table.
         long id = db.insert(TABLE_NAME, null, values);
 
-        // at last we are closing our
-        // database after adding database.
         db.close();
         return id;
     }
@@ -96,37 +70,47 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     public void remove(long str) {
-
-        this.db = getWritableDatabase();
+        db = getWritableDatabase();
         db.beginTransaction();
         String s = Long.toString(str);
         try {
-            // Order of deletions is important when foreign key relationships exist.
             db.delete(TABLE_NAME, "id=?", new String[]{s});
-//            db.delete(TABLE_NAME, null, null);"ID=?"
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.d(TAG, "Error while trying to delete all posts and users");
         } finally {
             db.endTransaction();
         }
+    }
+    public void update(long str, String newText) {
+        db = getWritableDatabase();
+        db.beginTransaction();
+        String s = Long.toString(str);
 
+        ContentValues values = new ContentValues();
+        values.put(NAME_COL, newText);
+        try {
+            db.update(TABLE_NAME, values,"id=?", new String[]{s});
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.d(TAG, "Error while trying to delete all posts and users");
+        } finally {
+            db.endTransaction();
+        }
     }
     public List<Product> getAllProducts() {
 
-        List<Product> prod = new ArrayList<>();
+        List<Product> products = new ArrayList<>();
+        String SELECT_QUERY = "SELECT * FROM " + TABLE_NAME;
 
-        String SELECT_QUERY = String.format("SELECT * FROM " + TABLE_NAME);
-
-        this.db = getReadableDatabase();
+        db = getReadableDatabase();
         Cursor cursor = db.rawQuery(SELECT_QUERY, null);
-
         try {
             if (cursor.moveToFirst()) {
                 do {
                     @SuppressLint("Range") long ids = cursor.getLong(cursor.getColumnIndex(ID_COL));
                     @SuppressLint("Range") String str = cursor.getString(cursor.getColumnIndex(NAME_COL));
-                    prod.add(new Product(ids, str));
+                    products.add(new Product(ids, str));
                 } while(cursor.moveToNext());
             }
         } catch (Exception e) {
@@ -136,6 +120,31 @@ public class DBHandler extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-        return prod;
+        return products;
+    }
+    public List<Product> getFirst(int number) {
+
+        List<Product> products = new ArrayList<>();
+        String SELECT_QUERY = "SELECT * FROM " + TABLE_NAME;
+
+        db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(SELECT_QUERY, null);
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") long ids = cursor.getLong(cursor.getColumnIndex(ID_COL));
+                    @SuppressLint("Range") String str = cursor.getString(cursor.getColumnIndex(NAME_COL));
+                    products.add(new Product(ids, str));
+                    number--;
+                } while(cursor.moveToNext() && number > 0);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Error while trying to get posts from database");
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return products;
     }
 }

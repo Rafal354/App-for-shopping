@@ -13,9 +13,10 @@ import java.util.List;
 
 public class MainView extends AppCompatActivity {
 
-    Button add;
-    AlertDialog dialog;
-    LinearLayout layout;
+    private Button add;
+    private AlertDialog addDialog;
+    private AlertDialog editDialog;
+    private LinearLayout layout;
     private DBHandler dbHandler;
 
     @Override
@@ -26,40 +27,23 @@ public class MainView extends AppCompatActivity {
         add = findViewById(R.id.add);
         layout = findViewById(R.id.container);
 
-        dbHandler = new DBHandler(MainView.this);
-        List<Product> products = dbHandler.getAllProducts();
+        dbHandler = DBHandler.getInstance(this);
+        List<Product> products = dbHandler.getFirst(100);
 
         for (Product product: products) {
-
-            View view = getLayoutInflater().inflate(R.layout.card, null);
-            TextView nameView = view.findViewById(R.id.name);
-            Button delete = view.findViewById(R.id.delete);
-
-            String str = product.getName();
-            long idk = product.getId();
-
-            nameView.setText(str);
-
-            delete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dbHandler.remove(idk);
-                    layout.removeView(view);
-                }
-            });
-            layout.addView(view);
+            addCard(product.getName(), product.getId());
         }
-        buildDialog();
 
+        buildDialogAdd();
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog.show();
+                addDialog.show();
             }
         });
     }
 
-    private void buildDialog() {
+    private void buildDialogAdd() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog, null);
 
@@ -68,28 +52,60 @@ public class MainView extends AppCompatActivity {
         builder.setView(view);
 
         builder.setTitle("Product name: ")
-            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int which) {
-                    long id = dbHandler.addNewProduct(name.getText().toString());
-                    addCard(name.getText().toString(), id);
-                    name.setText("");
-                }
-            })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int which) {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        long id = dbHandler.addNewProduct(name.getText().toString());
+                        addCard(name.getText().toString(), id);
+                        name.setText("".toUpperCase());
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
 
-                }
-            });
-        dialog = builder.create();
+                    }
+                });
+        addDialog = builder.create();
+    }
+
+    private void buildDialogEdit(View v, String text, long id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog, null);
+
+        EditText name = view.findViewById(R.id.nameEdit);
+
+        name.setText(text);
+
+        builder.setView(view);
+
+        builder.setTitle("Product name: ")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        int itemIndex = layout.indexOfChild(v);
+                        dbHandler.update(id, name.getText().toString());
+                        layout.removeView(v);
+                        TextView nameView = v.findViewById(R.id.name);
+                        nameView.setText(name.getText().toString());
+                        layout.addView(v, itemIndex);
+                        name.setText("".toUpperCase());
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+
+                    }
+                });
+        editDialog = builder.create();
     }
 
     private void addCard(String name, long id) {
         View view = getLayoutInflater().inflate(R.layout.card, null);
-
         TextView nameView = view.findViewById(R.id.name);
         Button delete = view.findViewById(R.id.delete);
+        Button edit = view.findViewById(R.id.edit);
 
         nameView.setText(name);
 
@@ -100,6 +116,15 @@ public class MainView extends AppCompatActivity {
                 layout.removeView(view);
             }
         });
+
+        edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildDialogEdit(view, name, id);
+                editDialog.show();
+            }
+        });
+
         layout.addView(view);
     }
 }
